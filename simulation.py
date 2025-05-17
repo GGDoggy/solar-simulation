@@ -11,7 +11,8 @@ planet_name = [
 "jupiter",
 "saturn",
 "uranus",
-"neptune"
+"neptune",
+"earth"
 ]
 
 mass = {
@@ -19,19 +20,22 @@ mass = {
     "jupiter": 1.8982e27,
     "saturn": 5.6832e26,
     "uranus": 8.6811e25,
-    "neptune": 1.0241e26
+    "neptune": 1.0241e26,
+    "earth": 5.9722e24
 }
 
 class Planet:
-    def __init__(self, name, mass, pos, vel, vector_count, record_size):  #  vector_count: how many vectors can be saved
+    def __init__(self, name, mass, pos, vel, vector_count, record_size, attracting=False):  #  vector_count: how many vectors can be saved
         self.name = name
         self.Gmass = G * mass
+        self.mass = mass
+        self.massinv = 1 / mass
         self.pos = np.zeros((vector_count, 3))
         self.pos[0] = pos
         self.vel = np.zeros((vector_count, 3))
         self.vel[0] = vel
         self.acc = np.zeros((vector_count, 3))
-        self.attracting = False
+        self.attracting = attracting
         self.trajectories = np.zeros((record_size, 3))
 
     def add_sun_acc(self, acc_index, pos_index):
@@ -80,7 +84,7 @@ class SolarSim:
             for j in range(i + 1, len(self.attractor)):
                 target = self.attractor[j]
                 added_acc = target.add_attracted_acc(source, acc_index, pos_index)
-                source.acc[acc_index] -= added_acc  # here is wrong
+                source.acc[acc_index] -= added_acc * source.massinv * target.mass  # here is wrong
 
     def add_trajectory(self, index):
         for planet in all_planets:
@@ -114,7 +118,7 @@ class SolarSim:
 real_trajectories = solar.get_trajectory(planet_name)
 init = solar.get_init_condition(planet_name)
 
-time_span = 365 * 86400 * 20
+time_span = 365 * 86400 * 2.4
 dt = 10000
 step_count = int(time_span / dt)
 
@@ -122,8 +126,16 @@ all_planets = []
 for planet in planet_name:
     pos = init[planet][0]
     vel = init[planet][1]
-    planet_obj = Planet(planet, mass[planet], pos, vel, 4, step_count)
+    planet_obj = Planet(planet, mass[planet], pos, vel, 4, step_count, attracting=True)
     all_planets.append(planet_obj)
+    if planet == "earth":
+        earth_pos = pos.copy()
+        earth_vel = vel.copy()
+
+spacecraft_init_vel = 9.5 * earth_vel / np.linalg.norm(earth_vel) + earth_vel
+spacecraft = Planet("spacecraft", 1, earth_pos, spacecraft_init_vel, 4, step_count)
+all_planets.append(spacecraft)
+planet_name.append("spacecraft")
 
 solar_sim = SolarSim(all_planets, step_count, dt)
 solar_sim.run_Leapfrog()
@@ -131,6 +143,7 @@ trajectories = solar_sim.get_trajectory(0)
 
 # print(trajectories)
 
-solar.plot_trajectory(trajectories, planet_name, 5e9)
-solar.plot_trajectory(real_trajectories, planet_name, 5e9)
+solar.plot_trajectory(trajectories, planet_name, 8e8)
+# solar.plot_trajectory(real_trajectories, planet_name, 5e9)
+plt.legend()
 plt.show()

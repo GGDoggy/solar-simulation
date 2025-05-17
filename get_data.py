@@ -23,12 +23,21 @@ para_exam = {
 }
 
 
-for planet in planets:
-    para = para_exam.copy()
-    para.update({'COMMAND': f"'{planet} bary'"})
-    url_para = urllib.parse.urlencode(para)
-    print(url_para)
+# for planet in planets:
+#     para = para_exam.copy()
+#     para.update({'COMMAND': f"'{planet} bary'"})
+#     url_para = urllib.parse.urlencode(para)
+#     print(url_para)
 
-    req = requests.get("https://ssd.jpl.nasa.gov/api/horizons.api?" + url_para)
-    with open(f"{planet}.get.txt", "w", encoding="utf-8") as file:
-        file.write(req.content.decode("utf-8"))
+#     req = requests.get("https://ssd.jpl.nasa.gov/api/horizons.api?" + url_para)
+#     with open(f"{planet}.get.txt", "w", encoding="utf-8") as file:
+#         file.write(req.content.decode("utf-8"))
+        
+        
+para_exam.update({"COMMAND": "sun"})
+para_exam.pop("CENTER")
+url_para = urllib.parse.urlencode(para_exam)
+print(url_para)
+req = requests.get("https://ssd.jpl.nasa.gov/api/horizons.api?" + url_para)
+with open("sun_from_earth.get.txt", "w", encoding="utf-8") as file:
+    file.write(req.content.decode("utf-8"))
