@@ -114,6 +114,7 @@ class SolarSim:
         # print(trajectories)
         return trajectories
 
+print(type(np.float64("0.88")))
 
 real_trajectories = solar.get_trajectory(planet_name)
 init = solar.get_init_condition(planet_name)
