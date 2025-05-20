@@ -12,7 +12,7 @@ API SOURCE: NASA/JPL Horizons API
 
 
 *******************************************************************************
-Ephemeris / API_USER Sun May 18 03:21:57 2025 Pasadena, USA      / Horizons
+Ephemeris / API_USER Tue May 20 01:00:50 2025 Pasadena, USA      / Horizons
 *******************************************************************************
 Target body name: Uranus Barycenter (7)           {source: DE441}
 Center body name: Sun (10)                        {source: DE441}

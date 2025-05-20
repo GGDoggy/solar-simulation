@@ -46,7 +46,7 @@ def send_request(planet, start_time, stop_time, time_span):
             file.write(req.content.decode("utf-8"))
 
 def get_trajectory(planet, start_day, end_day):
-    res = np.zeros((1, 7))
+    res = np.zeros((1, 7), dtype=np.longdouble)
     send_request(planet, start_day, end_day, "1d")
 
     if planet == "earth":
@@ -62,28 +62,28 @@ def get_trajectory(planet, start_day, end_day):
 
     for i, line in enumerate(lines):
         if i % 4 == 0:  # state: (time, x, y, z, vx, vy, vz)
-            state = np.zeros(7)
-            state[0] = np.float64(line.split()[0])
+            state = np.zeros(7, dtype=np.longdouble)
+            state[0] = np.longdouble(line.split()[0])
         if i % 4 == 1:
             r_data = line.strip().split("=")[1:]
-            state[1] = np.float64(r_data[0].split()[0]) * earth_inv
-            state[2] = np.float64(r_data[1].split()[0]) * earth_inv
-            state[3] = np.float64(r_data[2]) * earth_inv
+            state[1] = np.longdouble(r_data[0].split()[0]) * earth_inv
+            state[2] = np.longdouble(r_data[1].split()[0]) * earth_inv
+            state[3] = np.longdouble(r_data[2]) * earth_inv
         if i % 4 == 2:
             v_data = line.strip().split("=")[1:]
-            state[4] = np.float64(v_data[0].split()[0]) * earth_inv
-            state[5] = np.float64(v_data[1].split()[0]) * earth_inv
-            state[6] = np.float64(v_data[2]) * earth_inv
+            state[4] = np.longdouble(v_data[0].split()[0]) * earth_inv
+            state[5] = np.longdouble(v_data[1].split()[0]) * earth_inv
+            state[6] = np.longdouble(v_data[2]) * earth_inv
             state = state.reshape((1, 7))
-            res = np.concatenate((res, state))
+            res = np.concatenate((res, state), dtype=np.longdouble)
     return np.delete(res, 0, 0)
 
 def get_all_traj(planet, start_day, end_day):
     get_range = 3750
-    res = np.zeros((1, 7))
+    res = np.zeros((1, 7), dtype=np.longdouble)
     for i in range(int((end_day - start_day) / get_range)):
-        res = np.concatenate((res, get_trajectory(planet, start_day + get_range * i, start_day + get_range * (i+1))))
-    res = np.concatenate((res, get_trajectory(planet, start_day + get_range * int((end_day - start_day) / get_range), end_day)))
+        res = np.concatenate((res, get_trajectory(planet, start_day + get_range * i, start_day + get_range * (i+1))), dtype=np.longdouble)
+    res = np.concatenate((res, get_trajectory(planet, start_day + get_range * int((end_day - start_day) / get_range), end_day)), dtype=np.longdouble)
     s0 = 0
     dele = []
     for i, s in enumerate(res):
@@ -101,5 +101,5 @@ np.savez("planet_trajectories.npz",
     saturn=get_all_traj("saturn", start_day, end_day),
     uranus=get_all_traj("uranus", start_day, end_day),
     neptune=get_all_traj("neptune", start_day, end_day),
-    sun=get_all_traj("earth", start_day, end_day),
+    earth=get_all_traj("earth", start_day, end_day),
 )

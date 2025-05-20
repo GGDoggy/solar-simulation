@@ -26,7 +26,7 @@ API SOURCE: NASA/JPL Horizons API
 
 
 *******************************************************************************
-Ephemeris / API_USER Sun May 18 03:22:37 2025 Pasadena, USA      / Horizons
+Ephemeris / API_USER Tue May 20 01:01:13 2025 Pasadena, USA      / Horizons
 *******************************************************************************
 Target body name: Sun (10)                        {source: DE441}
 Center body name: Earth (399)                     {source: DE441}
@@ -43,8 +43,8 @@ Output units    : KM-S
 Calendar mode   : Mixed Julian/Gregorian
 Output type     : GEOMETRIC cartesian states
 Output format   : 3 (position, velocity, LT, range, range-rate)
-EOP file        : eop.250516.p250812
-EOP coverage    : DATA-BASED 1962-JAN-20 TO 2025-MAY-16. PREDICTS-> 2025-AUG-11
+EOP file        : eop.250519.p250815
+EOP coverage    : DATA-BASED 1962-JAN-20 TO 2025-MAY-19. PREDICTS-> 2025-AUG-14
 Reference frame : Ecliptic of J2000.0
 *******************************************************************************
 JDTDB
