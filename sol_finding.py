@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import solar
 from simulation import Spacecraft
 from stable_baselines3.common.env_checker import check_env
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 from stable_baselines3 import SAC
 
 class SpacecraftEnv(gym.Env):
@@ -58,7 +59,7 @@ class SpacecraftEnv(gym.Env):
             if self.spacecraft.fired == 1:
                 reward += vel / 100
             else:
-                reward -= self.flying_time * 1e-5
+                reward -= self.flying_time * 1e-4
         return reward
     
     def clear_data(self):
@@ -75,7 +76,8 @@ start_time = 2433283
 end_time = 2457023
 dt = 86400
 
-env = SpacecraftEnv(solar.get_trajectory(), dt)
+trajectory_data = solar.get_trajectory()
+env = SubprocVecEnv([SpacecraftEnv(trajectory_data, dt) for _ in range(4)])
 # check_env(env)
 
 model = SAC("MlpPolicy", env, verbose=1, learning_rate=0.0003)
@@ -83,20 +85,22 @@ model.learn(total_timesteps=1)
 model.save("sac_spacecraft")
 del model
 
+eval_env = SpacecraftEnv(trajectory_data, dt)
 model = SAC.load("sac_spacecraft")
-obs = env.reset()[0]
+obs = eval_env.reset()[0]
 truncated = False
-while not truncated:
+done = False
+while not truncated and not done:
     action, _states = model.predict(obs)
-    obs, rewards, dones, truncated, info = env.step(action)
+    obs, rewards, dones, truncated, info = eval_env.step(action)
     # print(obs, action)
 
 traj = []
-for spacecraft in env.spacecraft_history:
+for spacecraft in eval_env.spacecraft_history:
     traj.append(spacecraft.pos)
 traj = np.array(traj)
 ax = plt.subplot(projection='3d')
 # print(traj)
 solar.plot_trajectory(ax, traj, 5e9)
-solar.plot_planet_trajectory(ax, env.trajectories, env.trajectories.keys(), 5e9)
+solar.plot_planet_trajectory(ax, eval_env.trajectories, eval_env.trajectories.keys(), 5e9)
 plt.show()
