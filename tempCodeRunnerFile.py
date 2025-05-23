@@ -1,2 +1,1 @@
-s_ratio > mass_comp_ratio[planet]:
-                co
+SpacecraftEnv(trajectory_data, dt)

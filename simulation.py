@@ -32,10 +32,10 @@ planet_radius = {
     "uranus": 25362,
     "neptune": 24622,
     "earth": 6371,
-    "sun": 10000000
+    "sun": 5e7
 }
 
-acc_comp_ratio = 1e4
+acc_comp_ratio = 1e5
 mass_comp_ratio = dict()
 for planet in planet_GM:
     mass_comp_ratio[planet] = (planet_GM[planet] / GM_SUN * acc_comp_ratio)
@@ -50,11 +50,12 @@ class Spacecraft:
         self.planet_trajectories = planet_trajectories
         self.planets = planet_trajectories.keys()
         self.too_close = False
+        self.distance = dict()
         
     def update_acc(self, action_acc):
         norm_pos = np.linalg.norm(self.pos)
         if norm_pos < planet_radius["sun"]:
-            print(f"too close to sun with distance {norm_pos}")
+            # print(f"too close to sun with distance {norm_pos}")
             self.too_close = True
             self.acc = -GM_SUN / (planet_radius["sun"] * planet_radius["sun"] * norm_pos) * self.pos + action_acc
         else:
@@ -65,9 +66,10 @@ class Spacecraft:
             pos = self.planet_trajectories[planet][self.time][0:3]
             r = pos - self.pos
             r_norm = np.linalg.norm(r)
+            self.distance[planet] = r_norm
             dis_ratio = r_norm / norm_pos
-            if dis_ratio > mass_comp_ratio[planet]:
-                continue
+            # if dis_ratio > mass_comp_ratio[planet]:
+            #     continue
             if r_norm < planet_radius[planet]:
                 print(f"too close to {planet} with distance {r_norm}")
                 self.too_close = True
@@ -78,12 +80,13 @@ class Spacecraft:
         # print()
             
     def step(self, action, dt):
+        self.time += 1
         if self.fired == 0:
-            if action[3] > 0:
+            if action[3] > 0.99:
                 self.fired = 1
                 state = self.planet_trajectories["earth"][self.time]
                 self.pos = state[0:3].copy()
-                self.vel = state[3:6].copy()
+                self.vel = state[3:6].copy() + action[4:7] * 5.9
                 self.pos += 5e4 * self.pos / np.linalg.norm(self.pos)
                 # plt.scatter([self.pos[0]], [self.pos[1]], c='red', s=10)
             else:
@@ -92,7 +95,7 @@ class Spacecraft:
                 state = self.planet_trajectories["earth"][self.time]
                 self.pos = state[0:3].copy()
                 self.vel = state[3:6].copy()
-                return Spacecraft(np.concatenate(([self.time - 1], pos0, vel0, [self.fired])), self.planet_trajectories)
+                return np.concatenate(([self.time - 1], pos0, vel0, [self.fired]))
         
         pos0 = self.pos.copy()
         vel0 = self.vel.copy()
@@ -102,10 +105,9 @@ class Spacecraft:
         self.pos += self.vel * dt
         self.update_acc(acc)
         self.vel += self.acc * dt / 2
-        self.time += 1
         # print(self.pos, self.vel, self.acc)
         # time.sleep(0.1)
-        return Spacecraft(np.concatenate(([self.time - 1], pos0, vel0, [self.fired])), self.planet_trajectories)
+        return np.concatenate(([self.time - 1], pos0, vel0, [self.fired]))
 
 
 if __name__ == "__main__":

@@ -51,4 +51,4 @@ def get_trajectory():
 
 if __name__ == "__main__":
     
-    print(gene_state_table(get_trajectory()["mars"]))
+    print(np.random.random())
