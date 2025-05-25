@@ -47,7 +47,7 @@ def send_request(planet, start_time, stop_time, time_span):
 
 def get_trajectory(planet, start_day, end_day):
     res = np.zeros((1, 7), dtype=np.longdouble)
-    send_request(planet, start_day, end_day, "1d")
+    send_request(planet, start_day, end_day, "1h")
 
     if planet == "earth":
         with open("sun_from_earth.get.txt", "r", encoding="utf-8") as file:

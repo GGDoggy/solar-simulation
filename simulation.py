@@ -35,11 +35,6 @@ planet_radius = {
     "sun": 5e7
 }
 
-acc_comp_ratio = 1e5
-mass_comp_ratio = dict()
-for planet in planet_GM:
-    mass_comp_ratio[planet] = (planet_GM[planet] / GM_SUN * acc_comp_ratio)
-    mass_comp_ratio[planet] *= mass_comp_ratio[planet]
 
 class Spacecraft:
     def __init__(self, state, planet_trajectories):  # state: (time, x, y, z, vx, vy, vz, fired)
@@ -48,66 +43,82 @@ class Spacecraft:
         self.vel = state[4:7]
         self.fired = state[7]
         self.planet_trajectories = planet_trajectories
-        self.planets = planet_trajectories.keys()
+        self.planets = list(planet_trajectories.keys())
         self.too_close = False
         self.distance = dict()
+        self.time_list = list(planet_trajectories[self.planets[0]].keys())
+        self.time_index = self.time_list.index(self.time)
         
-    def update_acc(self, action_acc):
-        norm_pos = np.linalg.norm(self.pos)
-        if norm_pos < planet_radius["sun"]:
-            # print(f"too close to sun with distance {norm_pos}")
-            self.too_close = True
-            self.acc = -GM_SUN / (planet_radius["sun"] * planet_radius["sun"] * norm_pos) * self.pos + action_acc
+    def update_acc(self, action_acc, close=False, targ=""):
+        if close:
+            norm_pos = np.linalg.norm(self.pos)
+            self.acc = -GM_SUN / (norm_pos * norm_pos * norm_pos) * self.pos
+            targ_prev_pos = self.planet_trajectories[targ][self.time_list[self.time_index - 1]][0:3]
+            targ_next_pos = self.planet_trajectories[targ][self.time_list[self.time_index]][0:3]
+            targ_step = (targ_next_pos - targ_prev_pos) / 3600
+            targ_pos = targ_prev_pos + self.close_counter * targ_step
+            disp = targ_pos - self.pos
+            norm_disp = np.linalg.norm(disp)
+            self.acc += planet_GM[targ] / (norm_disp * norm_disp * norm_disp) * disp
         else:
-            self.acc = -GM_SUN / (norm_pos * norm_pos * norm_pos) * self.pos + action_acc
-        #     print(-GM_SUN / (norm_pos * norm_pos * norm_pos) * self.pos, norm_pos)
-        # print(self.acc)
-        for planet in self.planets:
-            pos = self.planet_trajectories[planet][self.time][0:3]
-            r = pos - self.pos
-            r_norm = np.linalg.norm(r)
-            self.distance[planet] = r_norm
-            dis_ratio = r_norm / norm_pos
-            # if dis_ratio > mass_comp_ratio[planet]:
-            #     continue
-            if r_norm < planet_radius[planet]:
-                print(f"too close to {planet} with distance {r_norm}")
+            norm_pos = np.linalg.norm(self.pos)
+            if norm_pos < planet_radius["sun"]:
+                print(f"too close to sun with distance {norm_pos}")
                 self.too_close = True
-                self.acc += planet_GM[planet] / (planet_radius[planet] * planet_radius[planet] * r_norm) * r
+                self.acc = -GM_SUN / (planet_radius["sun"] * planet_radius["sun"] * norm_pos) * self.pos + action_acc
             else:
-                self.acc += planet_GM[planet] / (r_norm * r_norm * r_norm) * r
-                # print(planet_GM[planet] / (r_norm * r_norm * r_norm) * r, r_norm)
-        # print()
+                self.acc = -GM_SUN / (norm_pos * norm_pos * norm_pos) * self.pos + action_acc
+            for planet in self.planets:
+                pos = self.planet_trajectories[planet][self.time][0:3]
+                r = pos - self.pos
+                r_norm = np.linalg.norm(r)
+                self.distance[planet] = r_norm
+                if r_norm < planet_radius[planet]:
+                    print(f"too close to {planet} with distance {r_norm}")
+                    self.too_close = True
+                    self.acc += planet_GM[planet] / (planet_radius[planet] * planet_radius[planet] * r_norm) * r
+                else:
+                    self.acc += planet_GM[planet] / (r_norm * r_norm * r_norm) * r
             
-    def step(self, action, dt):
-        self.time += 1
-        if self.fired == 0:
-            if action[3] > 0.99:
-                self.fired = 1
-                state = self.planet_trajectories["earth"][self.time]
-                self.pos = state[0:3].copy()
-                self.vel = state[3:6].copy() + action[4:7] * 5.9
-                self.pos += 5e4 * self.pos / np.linalg.norm(self.pos)
-                # plt.scatter([self.pos[0]], [self.pos[1]], c='red', s=10)
-            else:
-                pos0 = self.pos.copy()
-                vel0 = self.vel.copy()
-                state = self.planet_trajectories["earth"][self.time]
-                self.pos = state[0:3].copy()
-                self.vel = state[3:6].copy()
-                return np.concatenate(([self.time - 1], pos0, vel0, [self.fired]))
+    def step(self, action, dt, close=False, targ=""):  # actoin: (ax, ay, az, fire[>0 to fire], init_vel)
+        if close:
+            pos0 = self.pos.copy()
+            vel0 = self.vel.copy()
+            acc = action[0:3] * 5.6e-6
+            self.update_acc(acc, close=True, targ=targ)
+            self.vel += self.acc * dt / 2
+            self.pos += self.vel * dt
+            self.update_acc(acc, close=True, targ=targ)
+            self.vel += self.acc * dt / 2
+            self.close_counter += 1
+            return np.concatenate(([self.time - 1], pos0, vel0, [self.fired]))
         
-        pos0 = self.pos.copy()
-        vel0 = self.vel.copy()
-        acc = action[0:3]
-        self.update_acc(acc)
-        self.vel += self.acc * dt / 2
-        self.pos += self.vel * dt
-        self.update_acc(acc)
-        self.vel += self.acc * dt / 2
-        # print(self.pos, self.vel, self.acc)
-        # time.sleep(0.1)
-        return np.concatenate(([self.time - 1], pos0, vel0, [self.fired]))
+        if not close:
+            self.time_index += 1
+            self.time = self.time_list[self.time_index]
+            if self.fired == 0:
+                if action[3] > 0:
+                    self.fired = 1
+                    state = self.planet_trajectories["earth"][self.time]
+                    self.pos = state[0:3].copy()
+                    self.vel = state[3:6].copy() + action[4:7] * 5.9
+                    self.pos += 8e4 * self.pos / np.linalg.norm(self.pos)
+                else:
+                    pos0 = self.pos.copy()
+                    vel0 = self.vel.copy()
+                    state = self.planet_trajectories["earth"][self.time]
+                    self.pos = state[0:3].copy()
+                    self.vel = state[3:6].copy()
+                    return np.concatenate(([self.time_list[self.time_index - 1]], pos0, vel0, [self.fired]))
+            pos0 = self.pos.copy()
+            vel0 = self.vel.copy()
+            acc = action[0:3] * 5.6e-6
+            self.update_acc(acc)
+            self.vel += self.acc * dt / 2
+            self.pos += self.vel * dt
+            self.update_acc(acc)
+            self.vel += self.acc * dt / 2
+            return np.concatenate(([self.time - 1], pos0, vel0, [self.fired]))
 
 
 if __name__ == "__main__":
