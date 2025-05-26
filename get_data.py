@@ -28,7 +28,7 @@ def send_request(planet, start_time, stop_time, time_span):
     para['STOP_TIME'] = stop_time
     para['STEP_SIZE'] = time_span
     if planet != "earth":
-        para.update({'COMMAND': f"'{planet} bary'"})
+        para.update({'COMMAND': f"'{planet}'"})
         url_para = urllib.parse.urlencode(para)
         print(url_para)
 
@@ -93,6 +93,7 @@ def get_all_traj(planet, start_day, end_day):
     return np.delete(res, dele, 0)
 
 start_day = 2433283
+start_day = 2443377
 end_day = 2457023
 
 np.savez("planet_trajectories.npz",
@@ -103,3 +104,5 @@ np.savez("planet_trajectories.npz",
     neptune=get_all_traj("neptune", start_day, end_day),
     earth=get_all_traj("earth", start_day, end_day),
 )
+
+np.savez("voyager2.npz", voyager2=get_all_traj("voyager 2", start_day, end_day))

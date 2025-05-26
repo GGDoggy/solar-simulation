@@ -113,14 +113,14 @@ class Conditions:
     def sim(self, ax):
         self.spacecraft = Spacecraft(np.concatenate(([start_time], trajectory_data["earth"][start_time], [0])), trajectory_data)
         traj_history, vel_history, acc_history = run_sim(self.spacecraft, self.fire_time, self.fire_delay, self.end_time, self.init_vel, self.acc_strategy, self.trajectory_data)
-        # print(self.fire_delay, self.run_time)
+        print(self.fire_delay, self.run_time)
         if self.first == False:
             xlim = ax.get_xlim()
             ylim = ax.get_ylim()
             zlim = ax.get_zlim()
         ax.cla()
-        # solar.plot_trajectory(ax, traj_history, scale)
-        # solar.plot_planet_trajectory(ax, trajectory_data, trajectory_data.keys(), self.spacecraft.time_list[self.fire_time], self.spacecraft.time_list[self.end_time], scale)
+        solar.plot_trajectory(ax, traj_history, scale)
+        solar.plot_planet_trajectory(ax, trajectory_data, trajectory_data.keys(), self.spacecraft.time_list[self.fire_time], self.spacecraft.time_list[self.end_time], scale)
         if self.first == False:
             ax.set_xlim(xlim)
             ax.set_ylim(ylim)
@@ -167,4 +167,4 @@ acc_update = Button(ax_acc_update, "acc")
 acc_update.on_clicked(conditions.update_acc)
 
 plt.legend()
-# plt.show()
+plt.show()

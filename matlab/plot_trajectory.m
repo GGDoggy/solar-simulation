@@ -1,0 +1,16 @@
+function plot_trajectory(ax, trajectory, scale)
+    drop_ratio = 0;
+    start_plot = floor(size(trajectory,1) * drop_ratio) + 1;
+    plot3(ax, trajectory(start_plot:end-1,1), trajectory(start_plot:end-1,2), trajectory(start_plot:end-1,3), 'DisplayName', 'spacecraft');
+    if isvector(scale) && length(scale) == 6
+        xlim([scale(1), scale(2)]);
+        ylim([scale(3), scale(4)]);
+        zlim([scale(5), scale(6)]);
+    elseif scale ~= 0
+        xlim([-scale, scale]);
+        ylim([-scale, scale]);
+        zlim([-scale, scale]);
+    end
+    % scatter3(ax, trajectory(1,1), trajectory(1,2), trajectory(1,3), 36, 'orange', 'filled');
+    % scatter3(ax, trajectory(end,1), trajectory(end,2), trajectory(end,3), 36, 'red', 'filled');
+end
