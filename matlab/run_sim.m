@@ -1,6 +1,6 @@
 function [traj_history, vel_history, acc_history] = run_sim(spacecraft, fire_time, fire_delay, end_time, init_vel, acc_strategy, trajectory_data, dt, close_dt)
     acc_ptr = 0;
-    apply_time = fire_delay;
+    apply_time = fire_delay + 1;
     action = zeros(1,7);
     traj_history = [];
     vel_history = [];

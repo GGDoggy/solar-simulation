@@ -27,7 +27,7 @@ classdef Spacecraft < handle
             obj.too_close = false;
             obj.distance = struct();
             obj.time_list = str2double(keys(planet_trajectories.(obj.planets{1})));
-            obj.time_index = find(obj.time_list == obj.time, 1) + 1;
+            obj.time_index = find(obj.time_list == obj.time, 1);
             obj.acc = [0 0 0];
             obj.close_counter = 0;
             G = 6.6743e-20;
