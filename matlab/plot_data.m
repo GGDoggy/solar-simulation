@@ -75,33 +75,33 @@ for i = 1:N
     ang_mom(i) = norm(cross(pos_i, vel_i));
 end
 
-% Position vs. Time
-figure;
-stackedplot(time, [radi, ang, z], ...
-    'DisplayLabels', {'Radial (km)', 'Angular (rad)', 'Vertical (km)'});
-title('Position vs. Time');
-xlabel('Time (h)');
+% % Position vs. Time
+% figure;
+% stackedplot(time, [radi, ang, z], ...
+%     'DisplayLabels', {'Radial (km)', 'Angular (rad)', 'Vertical (km)'});
+% title('Position vs. Time');
+% xlabel('Time (h)');
 
-% Velocity vs. Time
-figure;
-stackedplot(time, [v_r, v_the, v_z], ...
-    'DisplayLabels', {'Radial (km/s)', 'Angular (km/s)', 'Vertical (km/s)'});
-title('Velocity vs. Time');
-xlabel('Time (h)');
+% % Velocity vs. Time
+% figure;
+% stackedplot(time, [v_r, v_the, v_z], ...
+%     'DisplayLabels', {'Radial (km/s)', 'Angular (km/s)', 'Vertical (km/s)'});
+% title('Velocity vs. Time');
+% xlabel('Time (h)');
 
-% Boost Acceleration vs. Time
-figure;
-stackedplot(time, [a_vel, a_2, a_z], ...
-    'DisplayLabels', {'Forward (km/s^2)', 'Side (km/s^2)', 'Vertical (km/s^2)'});
-title('Acceleration vs. Time');
-xlabel('Time (h)');
+% % Acceleration vs. Time
+% figure;
+% stackedplot(time, [a_vel, a_2, a_z], ...
+%     'DisplayLabels', {'Forward (km/s^2)', 'Side (km/s^2)', 'Vertical (km/s^2)'});
+% title('Acceleration vs. Time');
+% xlabel('Time (h)');
 
-% Angular Momentum vs. Time
-figure;
-plot(time, ang_mom);
-title('Angular Momentum vs. Time');
-xlabel('Time (h)');
-ylabel('Angular Momentum (m^2/s)');
+% % Angular Momentum vs. Time
+% figure;
+% plot(time, ang_mom);
+% title('Angular Momentum vs. Time');
+% xlabel('Time (h)');
+% ylabel('Angular Momentum (m^2/s)');
 
 vo2 = voyager2(1:end-7000, :);
 vo2(:, 2:4) = (to_plot * vo2(:, 2:4)')';
@@ -112,12 +112,16 @@ saturn(:, 2:4) = (to_plot * saturn(:, 2:4)')';
 uranus(:, 2:4) = (to_plot * uranus(:, 2:4)')';
 neptune(:, 2:4) = (to_plot * neptune(:, 2:4)')';
 
-% 3D Trajectory Plot
+% Trajectory Plot
 figure;
-scale = [-2e9 8e9 -5e9 5e9 -1e9 1e9];
-ax1 = subplot(6, 5, 1:25);
-ax2 = subplot(6, 5, 26:30);
+scale = [-2e9 6e9 -3e9 5e9 -2e8 2e8];
+ax1 = subplot(6, 4, 1:16);
 hold on;
+grid on;
+ylabel('Z');
+ax2 = subplot(6, 4, 17:24);
+hold on;
+grid on;
 plot_trajectory(ax1, ax2, (to_plot * pos')', scale);
 plot_planet_trajectory(ax1, ax2, "voyager 2", vo2, start_time, end_time, scale);
 plot_planet_trajectory(ax1, ax2, "earth", earth, start_time, end_time, scale);
@@ -127,6 +131,6 @@ plot_planet_trajectory(ax1, ax2, "saturn", saturn, start_time, end_time, scale);
 plot_planet_trajectory(ax1, ax2, "uranus", uranus, start_time, end_time, scale);
 plot_planet_trajectory(ax1, ax2, "neptune", neptune, start_time, end_time, scale);
 hold off;
-xlabel('X'); ylabel('Y'); zlabel('Z');
-title('Spacecraft Trajectory');
-grid on;
+xlabel('X'); ylabel('Y');
+title(ax1, 'Spacecraft Trajectory');
+set(ax1,'xticklabel',[], 'xtick', scale(1):1e9:scale(2));
