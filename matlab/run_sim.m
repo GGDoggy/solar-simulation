@@ -1,10 +1,11 @@
-function [traj_history, vel_history, acc_history] = run_sim(spacecraft, fire_time, fire_delay, end_time, init_vel, acc_strategy, trajectory_data, dt, close_dt)
+function [traj_history, vel_history, acc_history, times] = run_sim(spacecraft, fire_time, fire_delay, end_time, init_vel, acc_strategy, trajectory_data, dt, close_dt)
     acc_ptr = 0;
     apply_time = fire_delay + 1;
     action = zeros(1,7);
     traj_history = [];
     vel_history = [];
     acc_history = [];
+    times = [];
     have_acc = false;
     close = false;
     while spacecraft.time_index <= end_time
@@ -57,6 +58,7 @@ function [traj_history, vel_history, acc_history] = run_sim(spacecraft, fire_tim
             traj_history = [traj_history; spacecraft.pos];
             vel_history = [vel_history; spacecraft.vel];
             acc_history = [acc_history; action(1:3)];
+            times = [times; spacecraft.time];
         end
         apply_time = apply_time - 1;
     end

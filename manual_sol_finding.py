@@ -4,6 +4,7 @@ import json
 import solar
 from simulation import Spacecraft
 from matplotlib.widgets import Button
+import time
 
 def run_sim(spacecraft, fire_time, fire_delay, end_time, init_vel, acc_strategy, trajectory_data):
     acc_ptr = -1
@@ -140,7 +141,9 @@ start_time = list(trajectory_data["earth"].keys())[0]
 
 ax = plt.subplot(projection='3d')
 fire_delay, fire_time, end_time, init_vel = conditions.get_condition()
+t = time.time()
 traj_history, vel_history, acc_history = conditions.sim(ax)
+print(time.time() - t)
 time = np.array(conditions.spacecraft.time_list[fire_time:end_time])
 
 print(traj_history.shape, vel_history.shape, acc_history.shape, time.shape)

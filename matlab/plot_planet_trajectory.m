@@ -1,4 +1,4 @@
-function plot_planet_trajectory(ax, planet_name, planet_traj, start_time, end_time, scale)
+function plot_planet_trajectory(ax1, ax2, planet_name, planet_traj, start_time, end_time, scale)
     % planet_traj is an N x 7 matrix: [t x y z vx vy vz]
     time_vals = planet_traj(:,1);
     valid_idx = (time_vals <= end_time) & (time_vals >= start_time);

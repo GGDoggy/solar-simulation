@@ -63,7 +63,7 @@ classdef Spacecraft < handle
             for i = 1:length(obj.planets)
                 planet = obj.planets{i};
                 pos = obj.planet_trajectories.(planet)(num2str(obj.time));
-                r = pos(1:3) - obj.pos;
+                r = pos(2:4) - obj.pos;
                 r_norm = norm(r);
                 obj.distance.(planet) = r_norm;
                 if r_norm < obj.planet_radius.(planet)

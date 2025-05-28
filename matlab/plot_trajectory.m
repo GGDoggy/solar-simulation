@@ -1,4 +1,4 @@
-function plot_trajectory(ax, trajectory, scale)
+function plot_trajectory(ax1, ax2, trajectory, scale)
     drop_ratio = 0;
     start_plot = floor(size(trajectory,1) * drop_ratio) + 1;
     plot3(ax, trajectory(start_plot:end-1,1), trajectory(start_plot:end-1,2), trajectory(start_plot:end-1,3), 'DisplayName', 'spacecraft');

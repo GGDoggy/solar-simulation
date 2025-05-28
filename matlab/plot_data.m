@@ -4,6 +4,10 @@ load('spacecraft.mat', 'pos', 'vel', 'acc', 'time');
 load('planet_trajectories.mat');
 load('voyager2.mat');
 
+start_time = time(1);
+end_time = time(end);
+time = time - start_time;
+
 N = length(time);
 radi = zeros(N,1);
 ang = zeros(N,1);
@@ -15,9 +19,15 @@ a_vel = zeros(N,1);
 a_2 = zeros(N,1);
 a_z = zeros(N,1);
 ang_mom = zeros(N,1);
+plot_x = zeros(N,1);
+plot_y = zeros(N,1);
 
 revo = 0;
 last_ang = 0;
+finpos = pos(end,:);
+finpos(3) = 0;
+finpos = finpos / norm(finpos);
+to_plot = [finpos; cross(finpos, [0 0 1], 2); [0 0 1]]';
 
 for i = 1:N
     pos_i = pos(i,:);
@@ -31,7 +41,7 @@ for i = 1:N
     n_r = r / r_norm;
     n_the = cross(n_z, n_r);
     
-    rot = inv([n_r(:), n_the(:), n_z(:)]);
+    rot = [n_r(:), n_the(:), n_z(:)]';
     vel_tran = rot * vel_i';
     
     v = vel_i;
@@ -39,7 +49,7 @@ for i = 1:N
     n_v = v / norm(v);
     n_2 = cross(n_z, n_v);
     
-    rot2 = inv([n_v(:), n_2(:), n_z(:)]);
+    rot2 = [n_v(:), n_2(:), n_z(:)]';
     acc_tran = rot2 * acc_i(:);
     
     raw_ang = atan(r(2) / r(1)) + revo * pi + pi/2;
@@ -48,6 +58,10 @@ for i = 1:N
         revo = revo + 1;
     end
     last_ang = raw_ang;
+
+    plot_pos = to_plot * pos_i';
+    plot_x(i) = plot_pos(1);
+    plot_y(i) = plot_pos(2);
     
     radi(i) = r_norm;
     ang(i) = raw_ang;
@@ -63,47 +77,55 @@ end
 
 % Position vs. Time
 figure;
-subplot(3,1,1); plot(time, radi); title('Radial Position');
-subplot(3,1,2); plot(time, ang); title('Angular Position');
-subplot(3,1,3); plot(time, z); title('Vertical Position'); xlabel('Time (s)');
-sgtitle('Position vs. Time');
+stackedplot(time, [radi, ang, z], ...
+    'DisplayLabels', {'Radial (km)', 'Angular (rad)', 'Vertical (km)'});
+title('Position vs. Time');
+xlabel('Time (h)');
 
 % Velocity vs. Time
 figure;
-subplot(3,1,1); plot(time, v_r); title('Radial Velocity');
-subplot(3,1,2); plot(time, v_the); title('Tangential Velocity');
-subplot(3,1,3); plot(time, v_z); title('Vertical Velocity'); xlabel('Time (s)');
-sgtitle('Velocity vs. Time');
+stackedplot(time, [v_r, v_the, v_z], ...
+    'DisplayLabels', {'Radial (km/s)', 'Angular (km/s)', 'Vertical (km/s)'});
+title('Velocity vs. Time');
+xlabel('Time (h)');
 
 % Boost Acceleration vs. Time
 figure;
-subplot(3,1,1); plot(time, a_vel); title('Forward Acceleration');
-subplot(3,1,2); plot(time, a_2); title('Side Acceleration');
-subplot(3,1,3); plot(time, a_z); title('Vertical Acceleration'); xlabel('Time (s)');
-sgtitle('Boost Acceleration vs. Time');
+stackedplot(time, [a_vel, a_2, a_z], ...
+    'DisplayLabels', {'Forward (km/s^2)', 'Side (km/s^2)', 'Vertical (km/s^2)'});
+title('Acceleration vs. Time');
+xlabel('Time (h)');
 
 % Angular Momentum vs. Time
 figure;
 plot(time, ang_mom);
 title('Angular Momentum vs. Time');
+xlabel('Time (h)');
+ylabel('Angular Momentum (m^2/s)');
 
-% Radial Position vs. Angular Position
-figure;
-plot(ang, radi);
-title('Radial Position vs. Angular Position');
+vo2 = voyager2(1:end-7000, :);
+vo2(:, 2:4) = (to_plot * vo2(:, 2:4)')';
+earth(:, 2:4) = (to_plot * earth(:, 2:4)')';
+mars(:, 2:4) = (to_plot * mars(:, 2:4)')';
+jupiter(:, 2:4) = (to_plot * jupiter(:, 2:4)')';
+saturn(:, 2:4) = (to_plot * saturn(:, 2:4)')';
+uranus(:, 2:4) = (to_plot * uranus(:, 2:4)')';
+neptune(:, 2:4) = (to_plot * neptune(:, 2:4)')';
 
 % 3D Trajectory Plot
 figure;
-ax = axes('NextPlot','add');
+scale = [-2e9 8e9 -5e9 5e9 -1e9 1e9];
+ax1 = subplot(6, 5, 1:25);
+ax2 = subplot(6, 5, 26:30);
 hold on;
-plot_trajectory(ax, pos, 5e9);
-plot_planet_trajectory(ax, "voyager 2", voyager2(1:end-7000, :), time(1), time(end), 5e9);
-plot_planet_trajectory(ax, "earth", earth, time(1), time(end), 5e9);
-plot_planet_trajectory(ax, "mars", mars, time(1), time(end), 5e9);
-plot_planet_trajectory(ax, "jupiter", jupiter, time(1), time(end), 5e9);
-plot_planet_trajectory(ax, "saturn", saturn, time(1), time(end), 5e9);
-plot_planet_trajectory(ax, "uranus", uranus, time(1), time(end), 5e9);
-plot_planet_trajectory(ax, "neptune", neptune, time(1), time(end), 5e9);
+plot_trajectory(ax1, ax2, (to_plot * pos')', scale);
+plot_planet_trajectory(ax1, ax2, "voyager 2", vo2, start_time, end_time, scale);
+plot_planet_trajectory(ax1, ax2, "earth", earth, start_time, end_time, scale);
+plot_planet_trajectory(ax1, ax2, "mars", mars, start_time, end_time, scale);
+plot_planet_trajectory(ax1, ax2, "jupiter", jupiter, start_time, end_time, scale);
+plot_planet_trajectory(ax1, ax2, "saturn", saturn, start_time, end_time, scale);
+plot_planet_trajectory(ax1, ax2, "uranus", uranus, start_time, end_time, scale);
+plot_planet_trajectory(ax1, ax2, "neptune", neptune, start_time, end_time, scale);
 hold off;
 xlabel('X'); ylabel('Y'); zlabel('Z');
 title('Spacecraft Trajectory');

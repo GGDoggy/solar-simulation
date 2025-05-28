@@ -1,10 +1,10 @@
 % Load trajectory data
-% trajectory_data = get_trajectory();
+trajectory_data = get_trajectory();
 scale = 4e9;
 dt = 3600;
 close_dt = 1;
 init_fire_delay = 242616;
-init_run_time = 55200;
+init_run_time = 175200;
 change_rate = 10000;
 start_time_map = trajectory_data.earth;
 keys_list = keys(start_time_map);
@@ -21,9 +21,14 @@ hold(ax, 'on');
 view(ax, 3);
 
 % Initial plot
-[traj_history, vel_history, acc_history] = cond.sim(ax);
+[traj_history, vel_history, acc_history, times] = cond.sim(ax);
 
+pos = traj_history;
+vel = vel_history;
+acc = acc_history;
+time = times;
 plot_trajectory(ax, traj_history, 1e9);
+save("spacecraft.mat", "pos", "vel", "acc", "time");
 
 % % Add buttons
 % uicontrol('Style', 'pushbutton', 'String', 'Add DL', ...

@@ -73,11 +73,11 @@ classdef Conditions < handle
             obj.acc_strategy = jsondecode(s);
         end
         
-        function [traj_history, vel_history, acc_history] = sim(obj, ax)
+        function [traj_history, vel_history, acc_history, times] = sim(obj, ax)
             temp = obj.trajectory_data.earth;
             key = num2str(obj.start_time);
             obj.spacecraft = Spacecraft([temp(key), 0], obj.trajectory_data);
-            [traj_history, vel_history, acc_history] = run_sim(obj.spacecraft, obj.fire_time, obj.fire_delay, obj.end_time, obj.init_vel, obj.acc_strategy, obj.trajectory_data, obj.dt, obj.close_dt);
+            [traj_history, vel_history, acc_history, times] = run_sim(obj.spacecraft, obj.fire_time, obj.fire_delay, obj.end_time, obj.init_vel, obj.acc_strategy, obj.trajectory_data, obj.dt, obj.close_dt);
             disp([obj.fire_delay, obj.run_time]);
             if ~obj.first
                 xlim = get(ax, 'XLim');
