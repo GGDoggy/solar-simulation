@@ -1,8 +1,8 @@
-function plot_trajectory(ax1, ax2, trajectory, scale)
+function plot_trajectory(ax1, ax2, trajectory, scale, color)
     drop_ratio = 0;
     start_plot = floor(size(trajectory,1) * drop_ratio) + 1;
-    plot(ax1, trajectory(start_plot:end-1,1), trajectory(start_plot:end-1,2), 'DisplayName', 'spacecraft');
-    plot(ax2, trajectory(start_plot:end-1,1), trajectory(start_plot:end-1,3), 'DisplayName', 'spacecraft');
+    plot(ax1, trajectory(start_plot:end-1,1), trajectory(start_plot:end-1,2), 'DisplayName', 'Our Spacecraft', 'Color', color);
+    plot(ax2, trajectory(start_plot:end-1,1), trajectory(start_plot:end-1,3), 'DisplayName', 'Our Spacecraft', 'Color', color);
     if isvector(scale) && length(scale) == 6
         xlim(ax1, [scale(1), scale(2)]);
         ylim(ax1, [scale(3), scale(4)]);
